@@ -57,16 +57,24 @@ titles_lst = []
 div = soup.find("div", class_="chart-results-list")
 titles = div.find_all("h3", id="title-of-a-story")
 for title in titles:
-    if title.get_text(strip=True) not in ["Gains in Weekly Performance", "Additional Awards", "Songwriter(s):", "Producer(s):", "Imprint/Promotion Label:"]:
-        song = title.getText(strip=True)
-        titles_lst.append(song)
-        track= song
-        year= int(date_preference[:4])
-        query= f"track:{track} year:{year}"
+    song = title.getText(strip=True)
+    if song not in [
+        "Gains in Weekly Performance", "Additional Awards",
+        "Songwriter(s):", "Producer(s):", "Imprint/Promotion Label:"
+    ]:
+        track_name = song
+        year = int(date_preference[:4])
+        query = f'track:"{track_name}" year:{year}'
+
         try:
             results = sp.search(q=query, type="track", limit=1)
-            track_uris = [track["uri"] for track in results["tracks"]["items"]]
-            sp.playlist_add_items(playlist_id=playlist_id, items=track_uris)
-            print("Added track to playlist:", new_playlist["external_urls"]["spotify"])
-        except:
-            print('File Not Found')
+            if results["tracks"]["items"]:
+                uri = results["tracks"]["items"][0]["uri"]
+                sp.playlist_add_items(playlist_id=playlist_id, items=[uri])
+                print(f"✅ Added: {track_name}")
+            else:
+                print(f"❌ Not found on Spotify: {track_name}")
+            time.sleep(0.3)
+        except Exception as e:
+            print(f"⚠️ Error adding {track_name}: {e}")
+
