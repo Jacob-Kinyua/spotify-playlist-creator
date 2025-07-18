@@ -1,6 +1,21 @@
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
 from bs4 import BeautifulSoup
 import requests
 import time
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=os.getenv("CLIENT_ID"),
+    client_secret=os.getenv("CLIENT_SECRET"),
+    redirect_uri=os.getenv("REDIRECT_URL"),
+    scope="playlist-modify-private"
+))
+
+
 
 BROSWER_URL = "https://www.billboard.com/charts/hot-100/"
 
@@ -24,6 +39,14 @@ for title in titles:
     if title.get_text(strip=True) not in ["Gains in Weekly Performance", "Additional Awards", "Songwriter(s):", "Producer(s):", "Imprint/Promotion Label:"]:
         song = title.getText(strip=True)
         titles_lst.append(song)
+        track= title
+        year= int(date_preference[:4])
+        query= f"track:{track} year:{year}"
+        try:
+            results = sp.search(q=query, type="track")
+            print(results)
+        except:
+            print('File Not Found')
 
-print(titles_lst)
-print(len(titles_lst))
+# print(titles_lst)
+# print(len(titles_lst))
